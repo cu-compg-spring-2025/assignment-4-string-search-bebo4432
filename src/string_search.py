@@ -5,6 +5,7 @@ import random
 import argparse
 import matplotlib.pyplot as plt
 import naive_search
+import boyer_moore
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -93,7 +94,7 @@ def main():
                              args.text_range[1],
                              args.text_range[2])
 
-    test_functions = [naive_search.naive_search]
+    test_functions = [naive_search.naive_search, boyer_moore.boyer_moore_search]
 
 
     run_times, mem_usages = test_harness(test_functions,
@@ -101,10 +102,17 @@ def main():
                                          args.pattern_size,
                                          args.rounds)
 
-    fig, axs = plt.subplots(2,1, figsize=(args.width, args.height))
+# Experiment 1: Default alphabet
+    run_times, mem_usages = test_harness(test_functions,
+                                         text_size_range,
+                                         args.pattern_size,
+                                         args.rounds)
+
+    fig, axs = plt.subplots(2, 1, figsize=(args.width, args.height))
     fig.tight_layout(pad=3.0)
     ax = axs[0]
     ax.plot(text_size_range, run_times[0], label='Naive')
+    ax.plot(text_size_range, run_times[1], label='Boyer-Moore')
     ax.set_title(f'String Search Performance(|P|= {args.pattern_size})')
     ax.set_xlabel('Text size')
     ax.set_ylabel('Run time (ns)')
@@ -114,14 +122,58 @@ def main():
 
     ax = axs[1]
     ax.plot(text_size_range, mem_usages[0], label='Naive')
+    ax.plot(text_size_range, mem_usages[1], label='Boyer-Moore')
     ax.set_xlabel('Text size')
     ax.set_ylabel('Memory (bytes)')
     ax.legend(loc='best', frameon=False, ncol=3)
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
 
-
     plt.savefig(args.out_file)
+    
+    # Experiment 2: Worst case for Boyer-Moore (P and T are the same)
+    run_times = [ [] for _ in range(len(test_functions))]
+    mem_usages = [ [] for _ in range(len(test_functions))]
+
+    for text_size in text_size_range:
+        T = get_random_string(['A', 'T', 'C', 'G'], text_size)
+        P = T  # Pattern is the same as the text
+
+        _run_times = [ [] for _ in range(len(test_functions))]
+        _mem_usages = [ [] for _ in range(len(test_functions))]
+
+        for i in range(args.rounds):
+            for j, test_function in enumerate(test_functions):
+                run_time, mem_usage = run_test(test_function, T, P)
+                _run_times[j].append(run_time)
+                _mem_usages[j].append(mem_usage)
+
+        for j, test_function in enumerate(test_functions):
+            run_times[j].append(np.mean(_run_times[j]))
+            mem_usages[j].append(np.mean(_mem_usages[j]))
+            
+    fig, axs = plt.subplots(2, 1, figsize=(args.width, args.height))
+    fig.tight_layout(pad=3.0)
+    ax = axs[0]
+    ax.plot(text_size_range, run_times[0], label='Naive')
+    ax.plot(text_size_range, run_times[1], label='Boyer-Moore')
+    ax.set_title(f'Worst Case Performance (|P|= {args.pattern_size}, P=T)')
+    ax.set_xlabel('Text size')
+    ax.set_ylabel('Run time (ns)')
+    ax.legend(loc='best', frameon=False, ncol=3)
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+
+    ax = axs[1]
+    ax.plot(text_size_range, mem_usages[0], label='Naive')
+    ax.plot(text_size_range, mem_usages[1], label='Boyer-Moore')
+    ax.set_xlabel('Text size')
+    ax.set_ylabel('Memory (bytes)')
+    ax.legend(loc='best', frameon=False, ncol=3)
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+
+    plt.savefig(f"worst_case_{args.out_file}")
 
 if __name__ == '__main__':
     main()

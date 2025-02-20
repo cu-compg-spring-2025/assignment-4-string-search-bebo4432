@@ -44,12 +44,32 @@ def get_bad_char_table(P):
     bad_char_table = {}
     #####################################################################
     ## ADD CODE HERE
+    for i in range(len(P)):
+        bad_char_table[ord(P[i])] = i
     #####################################################################
     return bad_char_table
 
 def boyer_moore_search(T, P):
     occurrences = []
-    #####################################################################
+    ###################################################################
     ## ADD CODE HERE
+    m = len(P)
+    n = len(T)
+    
+    bad_char_table = get_bad_char_table(P)
+    good_suffix_table = get_good_suffix_table(P)
+    
+    s = 0
+    while s <= n - m:
+        j = m - 1
+        while j >= 0 and P[j] == T[s + j]:
+            j -= 1
+        if j < 0:
+            occurrences.append(s)
+            s += good_suffix_table[0]
+        else:
+            bad_char_shift = j - bad_char_table.get(ord(T[s + j]), -1)
+            good_suffix_shift = good_suffix_table[j + 1]
+            s += max(bad_char_shift, good_suffix_shift)
     #####################################################################
     return occurrences
