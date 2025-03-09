@@ -19,7 +19,7 @@ jobs:
       uses: classroom-resources/autograding-command-grader@v1
       with:
         test-name: test
-        setup-command: ''
+        setup-command: pip install numpy
         command: python src/string_search.py \     --text_range 100 10000 100 \     --pattern_size
           100 \     --rounds 1 \     --out_file doc/naive_search.png
         timeout: 10
