@@ -24,9 +24,16 @@ jobs:
           100 \     --rounds 1 \     --out_file doc/naive_search.png
         timeout: 10
         max-score: 10
+    - name: install plot
+      id: install-plot
+      uses: classroom-resources/autograding-python-grader@v1
+      with:
+        timeout: 10
+        setup-command: numpy matplotlib
     - name: Autograding Reporter
       uses: classroom-resources/autograding-grading-reporter@v1
       env:
         TEST_RESULTS: "${{steps.test.outputs.result}}"
+        INSTALL-PLOT_RESULTS: "${{steps.install-plot.outputs.result}}"
       with:
-        runners: test
+        runners: test,install-plot
