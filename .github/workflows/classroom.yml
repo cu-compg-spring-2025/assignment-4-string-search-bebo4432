@@ -20,8 +20,8 @@ jobs:
       with:
         test-name: test
         setup-command: pip install numpy matplotlib pandas scikit-learn tensorflow
-        command: python src/string_search.py \     --text_range 100 10000 100 \     --pattern_size
-          100 \     --rounds 1 \     --out_file doc/naive_search.png
+        command: python src/string_search.py \   --text_file data/input.txt \   --pattern
+          "search_string" \   --rounds 1 \   --out_file doc/output.png
         timeout: 10
         max-score: 10
     - name: Autograding Reporter
